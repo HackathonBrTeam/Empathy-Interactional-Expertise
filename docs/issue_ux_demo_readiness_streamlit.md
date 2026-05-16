@@ -1,30 +1,30 @@
-# Issue Draft: Registrar implementacoes de UX da branch ux-demo-readiness-streamlit
+# Issue Draft: Register UX implementations from branch ux-demo-readiness-streamlit
 
-## Contexto
+## Context
 
-Esta issue registra o pacote de implementacoes realizado na branch `ux-demo-readiness-streamlit`, focado em deixar a demo Streamlit mais clara, apresentavel, acessivel e coerente com o fluxo do EmpathyAI.
+This issue records the implementation package completed in the `ux-demo-readiness-streamlit` branch, focused on making the Streamlit demo clearer, more presentable, more accessible, and more consistent with the EmpathyAI flow.
 
-Branch local de registro: `ux-demo-readiness-streamlit`
+Local tracking branch: `ux-demo-readiness-streamlit`
 
-Commits locais:
+Local commits:
 
 - `4fd7bdc` - `Prepare Streamlit UX demo readiness`
 - `a58b9f1` - `Add public demo issue draft`
 - `b2f30ac` - `Document GitHub issue creation command`
 
-## Implementacoes registradas
+## Registered Implementations
 
-- Front-end Streamlit reorganizado para fluxo vertical e menor carga cognitiva.
-- Mapa de Alteridade com rotulos persistentes e exemplos em placeholders.
-- Cenarios de demo pre-preenchidos para acelerar apresentacao.
-- Diario de aprendizado mutuo com busca, titulos amigaveis, data/hora local, exclusao e exibicao localizada.
-- Correcoes de idioma para reduzir mistura EN/PT-BR/ES na interface e no diario.
-- Ponte sugerida destacada como resultado principal, com botao de copiar.
-- Entrada opcional de audio com `st.audio_input`, sinalizada como recurso de demo sem transcricao automatica.
-- Melhorias de acessibilidade: contraste, foco visivel, feedback nao dependente apenas de cor e script de checagem.
-- Documentacao criada para backlog UX, validacao de acessibilidade, contratos HTTP futuros, privacidade de audio, roteiro de demo e decisao de evolucao do front-end.
+- Reorganized the Streamlit front-end into a vertical flow with lower cognitive load.
+- Added persistent labels and example placeholders to the Alterity Map.
+- Added pre-filled demo scenarios to speed up presentations.
+- Improved the mutual learning diary with search, friendly titles, local date/time, deletion, and localized display.
+- Fixed language issues to reduce EN/PT-BR/ES mixing in the interface and diary.
+- Highlighted the suggested bridge as the primary result, with a copy button.
+- Added optional audio input with `st.audio_input`, clearly marked as a demo feature without automatic transcription.
+- Improved accessibility: contrast, visible focus, feedback that does not depend only on color, and a UX accessibility check script.
+- Added documentation for the UX backlog, accessibility validation, future HTTP contracts, audio privacy, demo script, and front-end evolution decision.
 
-## Arquivos principais
+## Main Files
 
 - `app/streamlit_app.py`
 - `empathy_engine/presentation/alterity_map.py`
@@ -42,23 +42,23 @@ Commits locais:
 - `docs/frontend_evolution_decision.md`
 - `docs/http_api_contracts.md`
 
-## Validacoes executadas
+## Validation Run
 
 - `python -m pytest`: 50 passed.
-- `python scripts/smoke_test.py`: 3 cenarios ok.
+- `python scripts/smoke_test.py`: 3 scenarios passed.
 - `python scripts/check_ux_accessibility.py`: ok.
-- `python scripts/check_streamlit.py`: ok em `http://localhost:8501`.
+- `python scripts/check_streamlit.py`: ok at `http://localhost:8501`.
 
-## Como criar esta issue no GitHub
+## How To Create This Issue On GitHub
 
-Depois de reautenticar o GitHub CLI:
+After re-authenticating the GitHub CLI:
 
 ```powershell
 gh auth login -h github.com
-gh issue create --repo HackathonBrTeam/Empathy-Interactional-Expertise --title "Registrar implementacoes de UX da branch ux-demo-readiness-streamlit" --body-file docs/issue_ux_demo_readiness_streamlit.md
+gh issue create --repo HackathonBrTeam/Empathy-Interactional-Expertise --title "Register UX implementations from branch ux-demo-readiness-streamlit" --body-file docs/issue_ux_demo_readiness_streamlit.md
 ```
 
-Opcionalmente, publique a branch antes:
+Optionally, publish the branch first:
 
 ```powershell
 git push -u origin ux-demo-readiness-streamlit
