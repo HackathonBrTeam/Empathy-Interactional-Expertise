@@ -27,6 +27,23 @@ def test_analyze_interaction_use_case_localizes_without_persisting(tmp_path):
     )
 
 
+def test_analyze_interaction_use_case_auto_detects_output_language(tmp_path):
+    store = InteractionStore(tmp_path / "interactions.sqlite3")
+    use_case = AnalyzeInteractionUseCase(store=store)
+
+    result = use_case.execute(
+        AnalyzeInteractionCommand(
+            interaction="Meu colega achou minha mensagem grosseira.",
+            store_consent=False,
+            use_llm=False,
+        )
+    )
+
+    assert result.workflow_result["language"]["user_language"] == "pt-BR"
+    assert result.workflow_result["language"]["output_language"] == "pt-BR"
+    assert result.display_result["output_language"] == "pt-BR"
+
+
 def test_analyze_interaction_use_case_persists_when_consented(tmp_path):
     db_path = tmp_path / "interactions.sqlite3"
     store = InteractionStore(db_path)

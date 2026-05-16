@@ -18,11 +18,15 @@ class LanguageMetadata(BaseModel):
 class ContextResult(BaseModel):
     literal_language: bool
     ambiguity_level: str
+    interaction_summary: str = ""
+    communication_need: str = "clarify_intention"
+    observed_cues: list[str] = Field(default_factory=list)
 
 
 class DoubleEmpathyAnalysis(BaseModel):
     gap_type: str
     possible_misinterpretation: str
+    mutual_need: str = ""
 
 
 class PerspectiveTranslation(BaseModel):

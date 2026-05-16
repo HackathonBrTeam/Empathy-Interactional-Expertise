@@ -9,6 +9,7 @@ from empathy_engine.config import load_settings
 from empathy_engine.i18n.language import (
     detect_user_language,
     normalize_language,
+    should_auto_detect_language,
 )
 from empathy_engine.llm.ollama_client import OllamaClient
 from empathy_engine.observability import WorkflowTimer, get_logger, log_event
@@ -37,16 +38,25 @@ class EmpathyWorkflow:
         self.response_composer_agent = ResponseComposerAgent(llm_client)
         self.learning_coach_agent = LearningCoachAgent()
 
-    def run(self, interaction: str, output_language="en"):
+    def run(
+        self,
+        interaction: str,
+        output_language="auto",
+        language_detection_text: str | None = None,
+    ):
         timer = WorkflowTimer()
         logger = get_logger()
 
         user_language = timer.measure(
             "detect_language",
-            lambda: detect_user_language(interaction),
+            lambda: detect_user_language(language_detection_text or interaction),
         )
         processing_language = self.settings.processing_language
-        output_language = normalize_language(output_language)
+        output_language = (
+            user_language
+            if should_auto_detect_language(output_language)
+            else normalize_language(output_language)
+        )
         anonymized_interaction = timer.measure(
             "anonymize",
             lambda: self.anonymizer.anonymize(interaction),
