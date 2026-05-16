@@ -17,4 +17,5 @@ For the intended behavior and architecture, start in `../specs/`.
 - `issue_estado_atual_aplicacao_en.md`: English translation of the demo-state issue draft.
 - `issue_ux_demo_readiness_streamlit.md`: issue draft for UX implementations already completed in the demo branch.
 - `issue_demo_publica_controlada.md`: issue draft for the protected public demo deployment.
+- `issue_landing_page_project.md`: issue draft for the project landing page.
 - `architecture.md`, `privacy_model.md`, `ethical_framework.md`: legacy operational summaries retained for quick reference.
