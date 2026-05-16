@@ -16,6 +16,8 @@
 - The app remains usable when Ollama cannot run the configured model.
 - `python -m pytest` passes before the demo.
 - `python scripts/smoke_test.py` passes before the demo.
+- `python scripts/check_ux_accessibility.py` passes before the demo.
+- `python scripts/check_streamlit.py` confirms the local interface responds.
 
 ## Smoke Test Scenarios
 

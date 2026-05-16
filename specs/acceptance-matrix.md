@@ -14,11 +14,13 @@ These scenarios connect product behavior to tests and smoke checks.
 | Consented storage writes local anonymized record | `features/privacy-consent-storage.md` | `tests/test_storage.py`, `tests/test_use_cases.py` |
 | No-consent analysis does not create a local database | `features/privacy-consent-storage.md` | `tests/test_use_cases.py` |
 | Streamlit UI responds locally | operational readiness | `python scripts/check_streamlit.py` |
+| UX contrast and basic responsive invariants are preserved | UX readiness | `python scripts/check_ux_accessibility.py` |
 
 ## Required Local Validation
 
 ```bash
 python -m pytest
 python scripts/smoke_test.py
+python scripts/check_ux_accessibility.py
 python scripts/check_streamlit.py
 ```

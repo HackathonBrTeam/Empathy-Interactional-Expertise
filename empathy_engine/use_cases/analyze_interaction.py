@@ -8,7 +8,8 @@ from empathy_engine.storage.interaction_store import InteractionStore
 
 class AnalyzeInteractionCommand(BaseModel):
     interaction: str = Field(min_length=1)
-    output_language: str = "en"
+    output_language: str = "auto"
+    language_detection_text: str | None = None
     store_consent: bool = False
     feedback: str | None = None
     use_llm: bool = True
@@ -34,13 +35,15 @@ class AnalyzeInteractionUseCase:
             workflow_result = workflow.run(
                 command.interaction,
                 output_language=command.output_language,
+                language_detection_text=command.language_detection_text,
             )
         except Exception as error:
             raise WorkflowExecutionError(str(error)) from error
 
+        resolved_output_language = workflow_result["language"]["output_language"]
         display_result = self.presenter.present(
             workflow_result,
-            command.output_language,
+            resolved_output_language,
         )
 
         stored_record_id = None

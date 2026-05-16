@@ -47,6 +47,54 @@ def test_workflow_runs_full_pipeline():
     }
 
 
+def test_workflow_auto_detects_output_language_from_user_text():
+    workflow = EmpathyWorkflow()
+
+    result = workflow.run("Meu colega achou minha mensagem grosseira.")
+
+    assert result["language"]["user_language"] == "pt-BR"
+    assert result["language"]["output_language"] == "pt-BR"
+    assert "possivel" not in result["response"]["bridge_message"]
+    assert "possível" in result["response"]["bridge_message"]
+
+
+def test_workflow_auto_detection_falls_back_to_english():
+    workflow = EmpathyWorkflow()
+
+    result = workflow.run("???")
+
+    assert result["language"]["user_language"] == "en"
+    assert result["language"]["output_language"] == "en"
+
+
+def test_workflow_uses_detection_text_when_context_is_enriched():
+    workflow = EmpathyWorkflow()
+
+    result = workflow.run(
+        "Alterity map registered for this analysis: User is direct.\n"
+        "Interaction to analyze:\nMeu colega achou minha mensagem grosseira.",
+        language_detection_text="Meu colega achou minha mensagem grosseira.",
+    )
+
+    assert result["language"]["user_language"] == "pt-BR"
+    assert result["language"]["output_language"] == "pt-BR"
+
+
+def test_workflow_uses_interaction_content_for_project_clarity_case():
+    workflow = EmpathyWorkflow()
+
+    result = workflow.run(
+        "minha colega de trabalho esta passando informacoes sobre o projeto "
+        "de forma confusa e desorganizada",
+        output_language="pt-BR",
+    )
+
+    assert result["context"]["communication_need"] == "clarify_project_information"
+    assert result["analysis"]["gap_type"] == "information_clarity_mismatch"
+    assert "project information" in result["translation"]["translation_for_other_person"]
+    assert "project information" in result["learning"]["reflection_question"]
+
+
 def test_workflow_keeps_processing_english_and_sets_output_language():
     workflow = EmpathyWorkflow()
 

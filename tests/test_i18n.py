@@ -1,6 +1,9 @@
 from empathy_engine.config import AppSettings
 from empathy_engine.i18n.language import (
     TRANSLATIONS,
+    detect_language_from_accept_language,
+    detect_language_from_locale,
+    detect_language_from_timezone,
     detect_user_language,
     is_likely_language,
     localize_workflow_result,
@@ -17,6 +20,33 @@ def test_language_detection_defaults_to_english():
     assert normalize_language("unknown") == "en"
 
 
+def test_locale_detection_supports_browser_language_tags():
+    assert detect_language_from_locale("pt-BR") == "pt-BR"
+    assert detect_language_from_locale("pt_BR") == "pt-BR"
+    assert detect_language_from_locale("es-AR") == "es"
+    assert detect_language_from_locale("en-US") == "en"
+    assert detect_language_from_locale("fr-FR") is None
+
+
+def test_accept_language_detection_uses_first_supported_language():
+    assert (
+        detect_language_from_accept_language("pt-BR,pt;q=0.9,en-US;q=0.8")
+        == "pt-BR"
+    )
+    assert (
+        detect_language_from_accept_language("fr-FR,es;q=0.9,en;q=0.8")
+        == "es"
+    )
+    assert detect_language_from_accept_language("fr-FR,de;q=0.9") is None
+
+
+def test_timezone_detection_supports_local_demo_regions():
+    assert detect_language_from_timezone("America/Sao_Paulo") == "pt-BR"
+    assert detect_language_from_timezone("America/Argentina/Buenos_Aires") == "es"
+    assert detect_language_from_timezone("America/New_York") == "en"
+    assert detect_language_from_timezone("Asia/Tokyo") is None
+
+
 def test_language_detection_supports_pt_br_en_and_es():
     assert detect_user_language("Meu colega achou minha mensagem grosseira.") == "pt-BR"
     assert detect_user_language("Mi colega pensó que mi mensaje fue grosero.") == "es"
@@ -26,6 +56,7 @@ def test_language_detection_supports_pt_br_en_and_es():
 def test_translation_coverage_and_fallback_to_english():
     assert validate_translation_coverage() == {}
     assert translate("unknown", "analyze") == "Analyze Interaction"
+    assert translate("pt-BR", "missing_test_key") == "missing_test_key"
 
     removed = TRANSLATIONS["es"].pop("analyze")
     try:
@@ -49,6 +80,20 @@ def test_localize_workflow_result_translates_display_fields():
     assert localized["output_language"] == "es"
     assert "señales emocionales" in localized["translation"]["translation_for_user"]
     assert "¿Qué supuestos" in localized["learning"]["reflection_question"]
+
+
+def test_localize_workflow_result_translates_dynamic_project_context():
+    workflow = EmpathyWorkflow()
+    result = workflow.run(
+        "minha colega passa informacoes do projeto de forma confusa e desorganizada",
+        output_language="pt-BR",
+    )
+
+    localized = localize_workflow_result(result, "pt-BR")
+
+    assert "informacoes de projeto" in localized["context"]["interaction_summary"]
+    assert "detalhes do projeto" in localized["translation"]["translation_for_user"]
+    assert "Qual informacao do projeto" in localized["learning"]["reflection_question"]
 
 
 def test_app_settings_normalizes_languages():

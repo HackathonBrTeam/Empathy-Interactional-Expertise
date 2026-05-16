@@ -16,6 +16,7 @@ from empathy_engine.i18n.locales.pt_br import UI_TRANSLATIONS as PT_BR_UI_TRANSL
 
 PROCESSING_LANGUAGE = "en"
 SUPPORTED_UI_LANGUAGES = ("en", "pt-BR", "es")
+AUTO_LANGUAGE_VALUES = {"auto", "detect", "detected", "user", "user_language"}
 
 
 LANGUAGE_LABELS = {
@@ -82,6 +83,87 @@ def normalize_language(language: str | None) -> str:
     return "en"
 
 
+def detect_language_from_locale(locale: str | None) -> str | None:
+    if not locale or not locale.strip():
+        return None
+
+    normalized = locale.strip().lower().replace("_", "-")
+
+    if normalized.startswith("pt"):
+        return "pt-BR"
+    if normalized.startswith("es"):
+        return "es"
+    if normalized.startswith("en"):
+        return "en"
+
+    return None
+
+
+def detect_language_from_accept_language(header: str | None) -> str | None:
+    if not header or not header.strip():
+        return None
+
+    for option in header.split(","):
+        language_tag = option.split(";")[0].strip()
+        detected = detect_language_from_locale(language_tag)
+        if detected:
+            return detected
+
+    return None
+
+
+def detect_language_from_timezone(timezone: str | None) -> str | None:
+    if not timezone or not timezone.strip():
+        return None
+
+    normalized = timezone.strip().lower()
+
+    brazil_timezones = {
+        "america/araguaina",
+        "america/bahia",
+        "america/belem",
+        "america/boa_vista",
+        "america/campo_grande",
+        "america/cuiaba",
+        "america/fortaleza",
+        "america/maceio",
+        "america/manaus",
+        "america/noronha",
+        "america/porto_velho",
+        "america/recife",
+        "america/rio_branco",
+        "america/santarem",
+        "america/sao_paulo",
+    }
+
+    spanish_timezones = (
+        "america/argentina/",
+        "america/bogota",
+        "america/caracas",
+        "america/guatemala",
+        "america/lima",
+        "america/mexico_city",
+        "america/montevideo",
+        "america/santiago",
+        "europe/madrid",
+    )
+
+    if normalized in brazil_timezones:
+        return "pt-BR"
+    if normalized in {"europe/london", "america/new_york", "america/chicago"}:
+        return "en"
+    if any(normalized.startswith(prefix) for prefix in spanish_timezones):
+        return "es"
+
+    return None
+
+
+def should_auto_detect_language(language: str | None) -> bool:
+    if language is None:
+        return True
+    return language.strip().lower() in AUTO_LANGUAGE_VALUES
+
+
 def get_default_ui_language() -> str:
     from empathy_engine.config import load_settings
 
@@ -98,7 +180,7 @@ def translate(language: str, key: str):
     normalized = normalize_language(language)
     return TRANSLATIONS.get(normalized, EN_UI_TRANSLATIONS).get(
         key,
-        EN_UI_TRANSLATIONS[key],
+        EN_UI_TRANSLATIONS.get(key, key),
     )
 
 
@@ -125,6 +207,14 @@ def translate_output_text(text: str, language: str | None) -> str:
 
 def localize_workflow_result(result: dict, language: str | None) -> dict:
     localized = dict(result)
+
+    context = dict(localized.get("context", {}))
+    if "interaction_summary" in context:
+        context["interaction_summary"] = translate_output_text(
+            context["interaction_summary"],
+            language,
+        )
+    localized["context"] = context
 
     translation = dict(localized.get("translation", {}))
     for key in ("translation_for_user", "translation_for_other_person"):
