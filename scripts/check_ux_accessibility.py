@@ -88,6 +88,15 @@ def main() -> None:
         raise SystemExit("ux-a11y: timeout guard must clear previous timers/listeners")
     if "parentWindow.addEventListener(eventName, resetTimers, true)" not in source:
         raise SystemExit("ux-a11y: timeout guard must watch human interaction events")
+    for timeout_token in (
+        "lastHumanActivity = Date.now()",
+        "setInterval(checkInactivity, 1000)",
+        "clearInterval(watchdogTimer)",
+    ):
+        if timeout_token not in source:
+            raise SystemExit(f"ux-a11y: missing timeout watchdog token: {timeout_token}")
+    if '"visibilitychange"' in source:
+        raise SystemExit("ux-a11y: visibility changes must not reset inactivity timers")
     if "_stcore/health" in source or "_stcore/stream" in source:
         raise SystemExit("ux-a11y: timeout guard should not depend on Streamlit health traffic")
     if "Session will expire soon due to inactivity" not in source:

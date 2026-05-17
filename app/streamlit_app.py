@@ -291,6 +291,9 @@ except (ValueError, ValidationError) as error:
 
 
 def enforce_demo_token_access(settings):
+    if not settings.demo_token_secret and "demo_token" in st.query_params:
+        del st.query_params["demo_token"]
+        return
     if not settings.demo_token_secret:
         return
     if st.session_state.get("demo_token_validated"):
@@ -348,11 +351,12 @@ def render_session_timeout_guard(settings):
               "scroll",
               "wheel",
               "touchstart",
-              "touchmove",
-              "visibilitychange"
+              "touchmove"
             ];
             let warningTimer = null;
             let expirationTimer = null;
+            let watchdogTimer = null;
+            let lastHumanActivity = Date.now();
             let expired = false;
             const previousGuard = parentWindow.__empathyInactivityTimeoutGuard;
 
@@ -415,10 +419,25 @@ def render_session_timeout_guard(settings):
               }}
             }}
 
+            function checkInactivity() {{
+              if (expired) {{
+                return;
+              }}
+              const idleMs = Date.now() - lastHumanActivity;
+              if (idleMs >= timeoutMs) {{
+                expireSession();
+                return;
+              }}
+              if (idleMs >= warningMs) {{
+                showWarning();
+              }}
+            }}
+
             function resetTimers() {{
               if (expired) {{
                 return;
               }}
+              lastHumanActivity = Date.now();
               hideWarning();
               clearTimeout(warningTimer);
               clearTimeout(expirationTimer);
@@ -429,6 +448,7 @@ def render_session_timeout_guard(settings):
             function destroy() {{
               clearTimeout(warningTimer);
               clearTimeout(expirationTimer);
+              clearInterval(watchdogTimer);
               humanEvents.forEach((eventName) => {{
                 parentDocument.removeEventListener(eventName, resetTimers, true);
                 parentWindow.removeEventListener(eventName, resetTimers, true);
@@ -446,10 +466,11 @@ def render_session_timeout_guard(settings):
               parentWindow.addEventListener(eventName, resetTimers, true);
             }});
             resetTimers();
+            watchdogTimer = setInterval(checkInactivity, 1000);
           }})();
         </script>
         """,
-        height=0,
+        height=1,
     )
 
 
