@@ -301,19 +301,35 @@ def render_session_timeout_guard(settings):
             const timeoutMs = {json.dumps(timeout_ms)};
             const warningMs = {json.dumps(warning_ms)};
             const expiredUrl = {json.dumps(expired_url)};
-            const parentWindow = window.parent;
-            const parentDocument = parentWindow.document;
+            const parentWindow = window.parent || window;
+            let parentDocument = document;
+            try {{
+              parentDocument = parentWindow.document || document;
+            }} catch (error) {{
+              parentDocument = document;
+            }}
             const humanEvents = [
+              "pointermove",
+              "pointerdown",
               "mousemove",
+              "mousedown",
               "keydown",
+              "keyup",
               "click",
               "scroll",
+              "wheel",
               "touchstart",
-              "touchmove"
+              "touchmove",
+              "visibilitychange"
             ];
             let warningTimer = null;
             let expirationTimer = null;
             let expired = false;
+            const previousGuard = parentWindow.__empathyInactivityTimeoutGuard;
+
+            if (previousGuard && typeof previousGuard.destroy === "function") {{
+              previousGuard.destroy();
+            }}
 
             function ensureWarning() {{
               let warning = parentDocument.getElementById("empathy-session-warning");
@@ -362,10 +378,12 @@ def render_session_timeout_guard(settings):
                 return;
               }}
               expired = true;
-              humanEvents.forEach((eventName) => {{
-                parentDocument.removeEventListener(eventName, resetTimers, true);
-              }});
-              parentWindow.location.replace(expiredUrl);
+              destroy();
+              try {{
+                parentWindow.location.replace(expiredUrl);
+              }} catch (error) {{
+                window.location.replace(expiredUrl);
+              }}
             }}
 
             function resetTimers() {{
@@ -379,14 +397,26 @@ def render_session_timeout_guard(settings):
               expirationTimer = setTimeout(expireSession, timeoutMs);
             }}
 
-            if (!parentWindow.__empathyInactivityTimeoutInstalled) {{
-              parentWindow.__empathyInactivityTimeoutInstalled = true;
-              ensureWarning();
+            function destroy() {{
+              clearTimeout(warningTimer);
+              clearTimeout(expirationTimer);
               humanEvents.forEach((eventName) => {{
-                parentDocument.addEventListener(eventName, resetTimers, true);
+                parentDocument.removeEventListener(eventName, resetTimers, true);
+                parentWindow.removeEventListener(eventName, resetTimers, true);
               }});
-              resetTimers();
+              if (parentWindow.__empathyInactivityTimeoutGuard === guard) {{
+                delete parentWindow.__empathyInactivityTimeoutGuard;
+              }}
             }}
+
+            const guard = {{ destroy }};
+            parentWindow.__empathyInactivityTimeoutGuard = guard;
+            ensureWarning();
+            humanEvents.forEach((eventName) => {{
+              parentDocument.addEventListener(eventName, resetTimers, true);
+              parentWindow.addEventListener(eventName, resetTimers, true);
+            }});
+            resetTimers();
           }})();
         </script>
         """,

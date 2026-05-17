@@ -77,7 +77,16 @@ def main() -> None:
         raise SystemExit("ux-a11y: optional audio input is missing from the demo UI")
     if "render_session_timeout_guard(settings)" not in source:
         raise SystemExit("ux-a11y: session timeout guard is not rendered")
-    if "mousemove" not in source or "keydown" not in source or "touchstart" not in source:
+    for event_name in ("pointermove", "pointerdown", "mousemove", "keydown", "wheel", "touchstart"):
+        if event_name not in source:
+            raise SystemExit(f"ux-a11y: timeout guard must watch {event_name}")
+    if "__empathyInactivityTimeoutGuard" not in source:
+        raise SystemExit("ux-a11y: timeout guard must reinstall cleanly across rerenders")
+    if "parentWindow.location.replace(expiredUrl)" not in source:
+        raise SystemExit("ux-a11y: timeout guard must redirect the parent window")
+    if "previousGuard.destroy()" not in source:
+        raise SystemExit("ux-a11y: timeout guard must clear previous timers/listeners")
+    if "parentWindow.addEventListener(eventName, resetTimers, true)" not in source:
         raise SystemExit("ux-a11y: timeout guard must watch human interaction events")
     if "_stcore/health" in source or "_stcore/stream" in source:
         raise SystemExit("ux-a11y: timeout guard should not depend on Streamlit health traffic")

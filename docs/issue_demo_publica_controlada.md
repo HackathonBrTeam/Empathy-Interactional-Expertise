@@ -47,6 +47,7 @@ Publish only as a controlled demo, not as an open demo:
 - [x] Add progressive launch messages, spinner, disabled CTA state, and graceful error state.
 - [x] Redirect automatically to the launcher-provided demo URL.
 - [ ] Configure the Cloud Run launcher CORS response for the GitHub Pages origin.
+- [x] Support launcher-provided `auth_url` or temporary credentials for browser Basic Auth autofill.
 - [ ] Confirm that no raw data is persisted.
 - [ ] Define automatic cleanup for `data/interactions.sqlite3` or temporary storage.
 - [ ] Document demo start/stop operations.
@@ -88,6 +89,30 @@ The endpoint should keep returning JSON with the current VM URL, for example:
   "url": "http://<current-vm-ip>"
 }
 ```
+
+## Authentication Autofill Contract
+
+Do not hardcode demo credentials in the GitHub Pages landing page. If Basic Auth autofill is required for the controlled demo, the Cloud Run launcher should return either an already prepared authenticated URL:
+
+```json
+{
+  "status": "running",
+  "auth_url": "https://temporary-user:temporary-password@<current-vm-host>"
+}
+```
+
+or return temporary credentials alongside the URL:
+
+```json
+{
+  "status": "running",
+  "url": "https://<current-vm-host>",
+  "username": "temporary-user",
+  "password": "temporary-password"
+}
+```
+
+The landing page will use these values only from the launcher response and will not store them in the static repository.
 
 ## Known Risks
 
