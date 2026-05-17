@@ -111,6 +111,10 @@ def main() -> None:
             raise SystemExit(f"landing: missing launch lifecycle text: {launch_text}")
     for launch_token in (
         "fetch(launcherEndpoint",
+        "applyDemoCredentials(demoUrl, payload)",
+        "payload.auth_url || payload.authUrl || payload.authURL",
+        "url.username = username",
+        "url.password = password",
         "readDemoUrl(payload)",
         "window.location.assign(demoUrl)",
         "button.disabled = isDisabled",
