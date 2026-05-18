@@ -31,6 +31,20 @@ REQUIRED_SCREENSHOTS = {
     "screenshot-ES-3.png",
     "screenshot-ES-4.png",
 }
+REQUIRED_TITLE_CASE_TEXT = {
+    "How The Mediation Flow Works",
+    "Built For Safer Communication Support",
+    "Interface Preview",
+    "Controlled Demo, Clear Boundaries",
+    "Como O Fluxo De Mediação Funciona",
+    "Apoio Para Comunicação Mais Segura",
+    "Prévia Da Interface",
+    "Demo Controlada, Limites Claros",
+    "Cómo Funciona El Flujo De Mediación",
+    "Apoyo Para Una Comunicación Más Segura",
+    "Vista Previa De La Interfaz",
+    "Demo Controlada, Límites Claros",
+}
 
 
 class LandingParser(HTMLParser):
@@ -77,8 +91,19 @@ def main() -> None:
     if missing_videos:
         raise SystemExit(f"landing: missing video embeds: {missing_videos}")
 
-    if "../images/EmpathyAI_logo.png" not in source:
-        raise SystemExit("landing: missing EmpathyAI logo asset reference")
+    if "../images/EmpathyAI_logo_mark.png" not in source:
+        raise SystemExit("landing: missing transparent header logo mark reference")
+    if "../images/EmpathyAI_logo_mark.png" not in parser.images:
+        raise SystemExit("landing: header logo should use the transparent logo mark")
+    if 'url("../images/EmpathyAI_logo_mark.png")' not in source:
+        raise SystemExit("landing: hero background should use the transparent logo mark")
+    if "object-position: center;" not in source:
+        raise SystemExit("landing: header logo alignment styling is missing")
+    missing_title_case = [
+        text for text in sorted(REQUIRED_TITLE_CASE_TEXT) if text not in source
+    ]
+    if missing_title_case:
+        raise SystemExit(f"landing: missing title-case headings: {missing_title_case}")
 
     missing_screenshots = [
         screenshot
