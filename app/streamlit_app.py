@@ -569,15 +569,26 @@ def resolve_initial_ui_language() -> str:
 
 
 initial_language = resolve_initial_ui_language()
+st.session_state.setdefault("selected_ui_language", initial_language)
 
-selected_language = st.sidebar.selectbox(
-    translate(initial_language, "ui_language"),
-    SUPPORTED_UI_LANGUAGES,
-    index=SUPPORTED_UI_LANGUAGES.index(initial_language),
-    format_func=lambda language: LANGUAGE_LABELS[language],
-)
+selected_language = st.session_state["selected_ui_language"]
+t = lambda key: translate(selected_language, key)
+
+language_columns = st.columns([0.68, 0.32], vertical_alignment="center")
+with language_columns[1]:
+    # The sidebar starts collapsed for mobile, so language switching must stay
+    # visible in the main flow for multilingual demo testers.
+    selected_language = st.selectbox(
+        t("ui_language"),
+        SUPPORTED_UI_LANGUAGES,
+        index=SUPPORTED_UI_LANGUAGES.index(selected_language),
+        format_func=lambda language: LANGUAGE_LABELS[language],
+        key="selected_ui_language",
+        label_visibility="visible",
+    )
 
 t = lambda key: translate(selected_language, key)
+
 store = InteractionStore()
 presenter = ResultPresenter()
 
@@ -719,14 +730,6 @@ def render_learning_diary():
         st.info(t("learning_diary_empty"))
 
 
-with st.sidebar.expander(t("local_status"), expanded=False):
-    status = get_local_runtime_status(settings)
-    ollama_status = t("status_available") if status.ollama_available else t("status_unavailable")
-    st.text(f"{t('status_model')}: {status.model}")
-    st.text(f"Ollama: {ollama_status}")
-    st.text(f"{t('status_processing_language')}: {status.processing_language}")
-    st.text(f"{t('status_database')}: {status.database_path}")
-
 st.markdown(
     f"""
     <div class="empathy-kicker">{t("product_kicker")}</div>
@@ -746,6 +749,14 @@ st.markdown(
 )
 
 st.info(t("notice"))
+
+with st.expander(t("local_status"), expanded=False):
+    status = get_local_runtime_status(settings)
+    ollama_status = t("status_available") if status.ollama_available else t("status_unavailable")
+    st.text(f"{t('status_model')}: {status.model}")
+    st.text(f"Ollama: {ollama_status}")
+    st.text(f"{t('status_processing_language')}: {status.processing_language}")
+    st.text(f"{t('status_database')}: {status.database_path}")
 
 st.markdown(
     f'<div class="empathy-section-title">{t("demo_scenario_heading")}</div>',
